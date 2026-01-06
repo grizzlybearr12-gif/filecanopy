@@ -36,6 +36,7 @@ export default function RootLayout({
             fill
             className="object-cover fixed inset-0 z-0"
             priority
+            quality={100}
           />
         )}
         <div className="fixed inset-0 z-10 bg-black/50"></div>
