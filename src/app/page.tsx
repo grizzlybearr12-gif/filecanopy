@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Search, MapPin } from 'lucide-react';
 import { AIRecommender } from '@/components/ai-recommender';
 import { useToast } from '@/hooks/use-toast';
+import { getCityFromCoordinates } from './actions';
 
 export default function Home() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -34,31 +35,19 @@ export default function Home() {
     navigator.geolocation.getCurrentPosition(
       async position => {
         const { latitude, longitude } = position.coords;
-        try {
-          // This is a free, no-API-key-required geocoding service.
-          const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
-          );
-          const data = await response.json();
-          const city = data.address.city || data.address.town || data.address.village || '';
-          if (city) {
-            setLocation(city);
-            toast({
-              title: 'Location Found!',
-              description: `Now showing caterers near ${city}.`,
-            });
-          } else {
-             toast({
-              variant: 'destructive',
-              title: 'Could Not Determine City',
-              description: 'We found your location but could not determine the city.',
-            });
-          }
-        } catch (error) {
+        const result = await getCityFromCoordinates(latitude, longitude);
+
+        if (result.city) {
+          setLocation(result.city);
           toast({
+            title: 'Location Found!',
+            description: `Now showing caterers near ${result.city}.`,
+          });
+        } else {
+           toast({
             variant: 'destructive',
-            title: 'Geolocation Error',
-            description: 'Could not fetch city from your coordinates.',
+            title: 'Could Not Determine City',
+            description: result.error || 'We found your location but could not determine the city.',
           });
         }
       },
