@@ -1,44 +1,93 @@
-import type { Caterer, Review } from '@/lib/data';
+'use server';
 
-type Preferences = {
-  cuisine: string;
-  budget: string; // "economy", "standard", "premium"
-  eventType: string;
-};
+import { ai } from '@/ai/genkit';
+import { z } from 'zod';
+import type { Caterer } from '@/lib/data';
 
-// This is a mock AI function that simulates a recommendation engine.
-export async function recommendCaterer(
-  preferences: Preferences,
-  caterers: Caterer[]
-): Promise<Caterer | null> {
-  // In a real scenario, this would be a call to a GenAI model.
-  // For this mock, we'll use some simple logic.
-  
-  await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate network delay
+const PreferencesSchema = z.object({
+  cuisine: z.string().describe('The desired cuisine type, e.g., "Italian", "BBQ"'),
+  budget: z.string().describe('The budget level, e.g., "economy", "standard", "premium"'),
+  eventType: z.string().describe('The type of event, e.g., "wedding", "corporate party"'),
+});
 
-  const cuisineLower = preferences.cuisine.toLowerCase();
+// We only need a subset of caterer data for the AI to make a decision.
+// This keeps the prompt concise and focused.
+const CatererInfoSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string(),
+  rating: z.number(),
+  // Simplifying menus and reviews to just text for the AI to parse.
+  menus: z.string(),
+  reviews: z.string(),
+});
 
-  let suitableCaterers = caterers.filter(caterer => {
-    // Check for cuisine keywords in description, menus, or reviews
-    const inDescription = caterer.description.toLowerCase().includes(cuisineLower);
-    const inMenus = caterer.menus.some(menu => 
-      menu.category.toLowerCase().includes(cuisineLower) || 
-      menu.items.some(item => item.name.toLowerCase().includes(cuisineLower))
-    );
-    const inReviews = caterer.reviews.some((review: Review) => 
-      review.comment.toLowerCase().includes(cuisineLower)
-    );
-    
-    return inDescription || inMenus || inReviews;
-  });
+const RecommendCatererInputSchema = z.object({
+  preferences: PreferencesSchema,
+  caterers: z.array(CatererInfoSchema),
+});
 
-  if (suitableCaterers.length === 0) {
-    // If no specific cuisine match, fall back to all caterers
-    suitableCaterers = [...caterers];
+// The AI will return only the ID of the recommended caterer.
+const RecommendCatererOutputSchema = z.string().describe('The ID of the recommended caterer.');
+
+const recommendationPrompt = ai.definePrompt({
+  name: 'recommendationPrompt',
+  input: { schema: RecommendCatererInputSchema },
+  output: { schema: RecommendCatererOutputSchema },
+  prompt: `You are an expert catering consultant. Your task is to recommend the single best caterer from the provided list based on the user's preferences.
+
+Analyze the user's preferences for cuisine, budget, and event type. Then, review the list of available caterers, paying close attention to their descriptions, menus, and existing reviews to find the perfect match.
+
+User Preferences:
+- Cuisine: {{{preferences.cuisine}}}
+- Budget: {{{preferences.budget}}}
+- Event Type: {{{preferences.eventType}}}
+
+Available Caterers:
+{{#each caterers}}
+- Caterer ID: {{{id}}}
+  - Name: {{{name}}}
+  - Description: {{{description}}}
+  - Rating: {{{rating}}}
+  - Menus: {{{menus}}}
+  - Reviews: {{{reviews}}}
+{{/each}}
+
+Based on your analysis, return only the string ID of the single most suitable caterer. For example: "gourmet-delights"`,
+});
+
+const recommendCatererFlow = ai.defineFlow(
+  {
+    name: 'recommendCatererFlow',
+    inputSchema: z.object({
+      preferences: PreferencesSchema,
+      caterers: z.custom<Caterer[]>(), // Accept the full Caterer type
+    }),
+    outputSchema: RecommendCatererOutputSchema,
+  },
+  async ({ preferences, caterers }) => {
+    // Transform the full caterer data into the simplified format for the AI prompt.
+    const catererInfoForAI = caterers.map(caterer => ({
+      id: caterer.id,
+      name: caterer.name,
+      description: caterer.description,
+      rating: caterer.rating,
+      menus: caterer.menus.map(m => `${m.category}: ${m.items.map(i => i.name).join(', ')}`).join('; '),
+      reviews: caterer.reviews.map(r => r.comment).join('; '),
+    }));
+
+    const { output } = await recommendationPrompt({
+      preferences,
+      caterers: catererInfoForAI,
+    });
+    return output!;
   }
+);
 
-  // Sort by rating as the primary factor
-  suitableCaterers.sort((a, b) => b.rating - a.rating);
-
-  return suitableCaterers[0] || null;
+// This is the exported function that will be called by the server action.
+export async function recommendCaterer(input: {
+  preferences: z.infer<typeof PreferencesSchema>;
+  caterers: Caterer[];
+}): Promise<string | null> {
+  return await recommendCatererFlow(input);
 }

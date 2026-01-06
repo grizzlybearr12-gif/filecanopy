@@ -1,14 +1,14 @@
-"use server";
+'use server';
 
-import { recommendCaterer } from "@/ai/flows/recommend";
-import { caterers, type Caterer } from "@/lib/data";
-import { z } from "zod";
+import { recommendCaterer } from '@/ai/flows/recommend';
+import { caterers, type Caterer } from '@/lib/data';
+import { z } from 'zod';
 
 const reviewSchema = z.object({
   catererId: z.string(),
   rating: z.coerce.number().min(1).max(5),
-  comment: z.string().min(10, "Comment must be at least 10 characters long."),
-  author: z.string().min(2, "Name must be at least 2 characters long."),
+  comment: z.string().min(10, 'Comment must be at least 10 characters long.'),
+  author: z.string().min(2, 'Name must be at least 2 characters long.'),
 });
 
 export async function submitReview(formData: FormData) {
@@ -21,13 +21,13 @@ export async function submitReview(formData: FormData) {
 
   if (!validatedFields.success) {
     return {
-      error: "Invalid data. Please check your submission.",
+      error: 'Invalid data. Please check your submission.',
     };
   }
 
   // In a real app, you'd save this to a database.
   // For now, we'll just simulate a success response.
-  console.log("New Review Submitted:", validatedFields.data);
+  console.log('New Review Submitted:', validatedFields.data);
 
   await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate DB call
 
@@ -37,7 +37,7 @@ export async function submitReview(formData: FormData) {
       ...validatedFields.data,
       id: Date.now(),
       date: new Date().toISOString().split('T')[0],
-    }
+    },
   };
 }
 
@@ -47,15 +47,26 @@ const aiPrefsSchema = z.object({
   eventType: z.string(),
 });
 
-export async function getAIRecommendation(preferences: z.infer<typeof aiPrefsSchema>): Promise<Caterer | null> {
+export async function getAIRecommendation(
+  preferences: z.infer<typeof aiPrefsSchema>
+): Promise<Caterer | null> {
   const validatedPrefs = aiPrefsSchema.safeParse(preferences);
 
   if (!validatedPrefs.success) {
-    console.error("Invalid AI preferences:", validatedPrefs.error);
+    console.error('Invalid AI preferences:', validatedPrefs.error);
     return null;
   }
 
-  // The AI flow needs the list of caterers to make a recommendation
-  const recommendation = await recommendCaterer(validatedPrefs.data, caterers);
-  return recommendation;
+  // The AI flow needs the list of caterers and preferences to make a recommendation
+  const recommendationId = await recommendCaterer({
+    preferences: validatedPrefs.data,
+    caterers,
+  });
+
+  if (!recommendationId) {
+    return null;
+  }
+
+  // Find the full caterer object from the ID returned by the AI
+  return caterers.find(c => c.id === recommendationId) || null;
 }
