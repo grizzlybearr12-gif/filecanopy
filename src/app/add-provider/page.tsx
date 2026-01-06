@@ -17,6 +17,9 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth, useFirestore, useStorage } from '@/firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { useState } from 'react';
 
 const providerSchema = z.object({
   name: z.string().min(2, 'Provider name must be at least 2 characters.'),
@@ -24,12 +27,16 @@ const providerSchema = z.object({
   serviceAreas: z.string().min(3, 'Please enter at least one service area.'),
   speciality: z.string().min(3, 'Please enter at least one speciality.'),
   description: z.string().min(20, 'Description must be at least 20 characters long.'),
+  logo: z.any().refine(files => files?.length === 1, 'Logo is required.'),
 });
 
 type ProviderFormValues = z.infer<typeof providerSchema>;
 
 export default function AddProviderPage() {
   const { toast } = useToast();
+  const storage = useStorage();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const form = useForm<ProviderFormValues>({
     resolver: zodResolver(providerSchema),
     defaultValues: {
@@ -41,14 +48,37 @@ export default function AddProviderPage() {
     },
   });
 
-  const onSubmit = (data: ProviderFormValues) => {
-    console.log('Provider data submitted:', data);
-    // In a real app, you would send this data to your backend.
-    toast({
-      title: 'Submission Received!',
-      description: "Thanks for adding your business. We'll review it shortly.",
-    });
-    form.reset();
+  const onSubmit = async (data: ProviderFormValues) => {
+    setIsSubmitting(true);
+    try {
+      const logoFile = data.logo[0];
+      const storageRef = ref(storage, `provider-logos/${Date.now()}-${logoFile.name}`);
+      const uploadResult = await uploadBytes(storageRef, logoFile);
+      const downloadURL = await getDownloadURL(uploadResult.ref);
+
+      const providerData = {
+        ...data,
+        logoUrl: downloadURL,
+      };
+      delete providerData.logo; // remove file object before logging
+
+      console.log('Provider data submitted:', providerData);
+      // In a real app, you would save this `providerData` to Firestore.
+      toast({
+        title: 'Submission Received!',
+        description: "Thanks for adding your business. We'll review it shortly.",
+      });
+      form.reset();
+    } catch (error) {
+      console.error("Error uploading file: ", error);
+      toast({
+        variant: 'destructive',
+        title: 'Upload Failed',
+        description: 'There was an error uploading your logo. Please try again.',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -141,7 +171,32 @@ export default function AddProviderPage() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" size="lg">Submit for Review</Button>
+               <FormField
+                control={form.control}
+                name="logo"
+                render={({ field: { value, onChange, ...fieldProps } }) => (
+                  <FormItem>
+                    <FormLabel>Logo</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="file"
+                        accept="image/png, image/jpeg, image/gif"
+                        onChange={(event) => {
+                          onChange(event.target.files);
+                        }}
+                        {...fieldProps}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Upload your company logo (PNG, JPG, or GIF).
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button type="submit" size="lg" disabled={isSubmitting}>
+                {isSubmitting ? 'Submitting...' : 'Submit for Review'}
+              </Button>
             </form>
           </Form>
         </CardContent>
