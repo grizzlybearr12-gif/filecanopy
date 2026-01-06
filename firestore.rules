@@ -1,0 +1,137 @@
+/**
+ * ============================================================================
+ *                         Firebase Security Rules
+ * ============================================================================
+ *
+ * @version 2
+ *
+ * @description
+ * This ruleset is designed for a catering discovery application. It prioritizes
+ * user privacy and data integrity while allowing public discovery of catering
+ * providers and their reviews.
+ *
+ * Core Philosophy:
+ * This security model balances public read access for discovery with strict,
+ * user-owned write access for user profiles and reviews. The ruleset assumes
+ * that while anyone (signed-in or not) can browse catering providers and
+ * read reviews, only authenticated users can contribute reviews, and they can
+ * only ever modify their own contributions. User profile information is kept
+ * strictly private to the individual user.
+ *
+ * Data Structure:
+ * - /users/{userId}: Private user profile documents.
+ * - /cateringProviders/{cateringProviderId}: A public collection of catering
+ *   providers.
+ * - /cateringProviders/{cateringProviderId}/reviews/{reviewId}: A public
+ *   subcollection of reviews for each provider.
+ *
+ * Key Security Decisions:
+ * - User Privacy: Users can only access their own document in the `/users`
+ *   collection. Listing all users is explicitly forbidden.
+ * - Public Directory: The `/cateringProviders` collection is publicly readable
+ *   to allow for browsing and searching. Client-side writes are disabled
+ *   pending the addition of an ownership model.
+ * - Owner-Only Writes: All write operations (create, update, delete) are
+ *   strictly controlled. A user can only create/edit their own profile and
+ *   their own reviews.
+ * - Denormalization for Authorization: The `reviews` subcollection contains a
+ *   `userId` field on each document. This is critical for enforcing ownership
+ *   rules on reviews without needing slow and costly `get()` calls to other
+ *   collections.
+ *
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ------------------------------------------------------------------------
+    // Helper Functions
+    // ------------------------------------------------------------------------
+
+    /**
+     * Returns true if the user is authenticated.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * Returns true if the authenticated user's UID matches the provided userId.
+     * This is the fundamental check for data ownership.
+     */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /**
+     * Returns true if the document exists and the current user is the owner.
+     * Used for safe update and delete operations.
+     */
+    function isExistingOwner(userId) {
+      return resource != null && isOwner(userId);
+    }
+
+    // ------------------------------------------------------------------------
+    // User Profiles (/users)
+    // ------------------------------------------------------------------------
+
+    /**
+     * @description Controls access to user profile data.
+     * @path /users/{userId}
+     * @allow A user (UID 'user_abc') can (create) their own profile at /users/user_abc.
+     * @deny A user (UID 'user_xyz') cannot (get) another user's profile at /users/user_abc.
+     * @principle Restricts access to a user's own data tree, enforcing privacy.
+     */
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false; // CRITICAL: Never allow clients to list all users.
+      allow create: if isOwner(userId) && request.resource.data.id == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
+      allow delete: if isExistingOwner(userId);
+    }
+
+    // ------------------------------------------------------------------------
+    // Catering Providers (/cateringProviders)
+    // ------------------------------------------------------------------------
+
+    /**
+     * @description Controls access to the public directory of catering providers.
+     * @path /cateringProviders/{cateringProviderId}
+     * @allow Any user, including unauthenticated ones, can (get) or (list) providers.
+     * @deny Any user cannot (create) a new provider document.
+     * @principle Provides public read access for a directory, while locking down writes.
+     */
+    match /cateringProviders/{cateringProviderId} {
+      allow get: if true;
+      allow list: if true;
+      // CRITICAL: Cannot implement owner-only writes. The 'CateringProvider' entity is missing an 'ownerId' or 'creatorId' field.
+      // Writes are disabled. These documents should be managed by a trusted backend or through the Firebase Console.
+      allow create: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+      allow update: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+      allow delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+
+      // ----------------------------------------------------------------------
+      // Reviews Subcollection (/cateringProviders/{cateringProviderId}/reviews)
+      // ----------------------------------------------------------------------
+
+      /**
+       * @description Controls access to reviews for a specific catering provider.
+       * @path /cateringProviders/{cateringProviderId}/reviews/{reviewId}
+       * @allow A signed-in user (UID 'user_abc') can (create) a review with 'userId: "user_abc"'.
+       * @deny A signed-in user (UID 'user_xyz') cannot (update) a review where 'resource.data.userId' is 'user_abc'.
+       * @principle Enforces document ownership for writes while allowing public reads.
+       */
+      match /reviews/{reviewId} {
+        allow get: if true;
+        allow list: if true;
+        allow create: if isSignedIn()
+                      && request.resource.data.userId == request.auth.uid
+                      && request.resource.data.cateringProviderId == cateringProviderId;
+        allow update: if isExistingOwner(resource.data.userId)
+                      && request.resource.data.userId == resource.data.userId
+                      && request.resource.data.cateringProviderId == resource.data.cateringProviderId;
+        allow delete: if isExistingOwner(resource.data.userId);
+      }
+    }
+  }
+}
