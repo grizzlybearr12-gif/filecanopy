@@ -26,8 +26,8 @@ export function CatererCard({ caterer }: CatererCardProps) {
             src={caterer.logo.imageUrl}
             alt={`${caterer.name} logo`}
             data-ai-hint={caterer.logo.imageHint}
-            width={80}
-            height={80}
+            width={60}
+            height={60}
             className="rounded-full border"
           />
           <div className="flex-1">
