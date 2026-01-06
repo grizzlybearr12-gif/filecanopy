@@ -22,6 +22,7 @@ const providerSchema = z.object({
   name: z.string().min(2, 'Provider name must be at least 2 characters.'),
   phoneNumber: z.string().min(10, 'Please enter a valid phone number.'),
   serviceAreas: z.string().min(3, 'Please enter at least one service area.'),
+  speciality: z.string().min(3, 'Please enter at least one speciality.'),
   description: z.string().min(20, 'Description must be at least 20 characters long.'),
 });
 
@@ -35,6 +36,7 @@ export default function AddProviderPage() {
       name: '',
       phoneNumber: '',
       serviceAreas: '',
+      speciality: '',
       description: '',
     },
   });
@@ -105,6 +107,22 @@ export default function AddProviderPage() {
               />
               <FormField
                 control={form.control}
+                name="speciality"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Specialties</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., French Cuisine, Vegan, BBQ" {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      List your culinary specialties, separated by commas.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
                 name="description"
                 render={({ field }) => (
                   <FormItem>
@@ -117,7 +135,7 @@ export default function AddProviderPage() {
                       />
                     </FormControl>
                     <FormDescription>
-                      Provide a brief overview of your services, specialties, and what makes you unique.
+                      Provide a brief overview of your services and what makes you unique.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
