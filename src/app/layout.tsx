@@ -30,23 +30,25 @@ export default function RootLayout({
       </head>
       <body className={cn('font-body antialiased', 'min-h-screen bg-background')}>
         <FirebaseClientProvider>
-          {bgImage && (
-            <Image
-              src={bgImage.imageUrl}
-              alt={bgImage.description}
-              data-ai-hint={bgImage.imageHint}
-              fill
-              className="object-cover fixed inset-0 z-0"
-              priority
-            />
-          )}
-          <div className="fixed inset-0 z-10 bg-black/50"></div>
-          <div className="relative z-20 flex min-h-screen flex-col">
-            <Header />
-            <main className="flex-1">{children}</main>
-            <Footer />
+          <div className="relative min-h-screen">
+            {bgImage && (
+              <Image
+                src={bgImage.imageUrl}
+                alt={bgImage.description}
+                data-ai-hint={bgImage.imageHint}
+                fill
+                className="object-cover fixed inset-0 z-0"
+                priority
+              />
+            )}
+            <div className="fixed inset-0 z-10 bg-black/50"></div>
+            <div className="relative z-20 flex min-h-screen flex-col">
+              <Header />
+              <main className="flex-1">{children}</main>
+              <Footer />
+            </div>
+            <Toaster />
           </div>
-          <Toaster />
         </FirebaseClientProvider>
       </body>
     </html>
