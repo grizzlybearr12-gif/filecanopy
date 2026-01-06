@@ -1,6 +1,7 @@
 import Link from 'next/link';
-import { UtensilsCrossed } from 'lucide-react';
+import { PlusCircle, UtensilsCrossed } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Button } from './ui/button';
 
 export function Header() {
   return (
@@ -12,6 +13,14 @@ export function Header() {
             CaterEase
           </span>
         </Link>
+        <div className="ml-auto">
+          <Button asChild variant="ghost" size="icon">
+            <Link href="/add-provider">
+              <PlusCircle className="h-6 w-6" />
+              <span className="sr-only">Add Provider</span>
+            </Link>
+          </Button>
+        </div>
       </div>
     </header>
   );
