@@ -1,8 +1,6 @@
 import { ImageResponse } from 'next/og'
 import { UtensilsCrossed } from 'lucide-react'
 
-export const runtime = 'edge'
-
 export const size = {
   width: 32,
   height: 32,
