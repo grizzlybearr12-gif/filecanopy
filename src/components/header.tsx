@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { PlusCircle, UtensilsCrossed } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
+import { LoginDialog } from './login-dialog';
 
 export function Header() {
   return (
@@ -13,7 +14,8 @@ export function Header() {
             CaterEase
           </span>
         </Link>
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-2">
+          <LoginDialog />
           <Button asChild variant="ghost" size="icon">
             <Link href="/add-provider">
               <PlusCircle className="h-6 w-6" />

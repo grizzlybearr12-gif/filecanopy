@@ -1,20 +1,76 @@
-"use client";
+'use client';
 
 import { useState } from 'react';
 import { caterers } from '@/lib/data';
 import { CatererCard } from '@/components/caterer-card';
 import { Input } from '@/components/ui/input';
-import { Search } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Search, MapPin } from 'lucide-react';
 import { AIRecommender } from '@/components/ai-recommender';
+import { useToast } from '@/hooks/use-toast';
 
 export default function Home() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [location, setLocation] = useState('');
+  const { toast } = useToast();
 
   const filteredCaterers = caterers.filter(
-    (caterer) =>
-      caterer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      caterer.serviceArea.toLowerCase().includes(searchTerm.toLowerCase())
+    caterer =>
+      (caterer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        caterer.serviceArea.toLowerCase().includes(searchTerm.toLowerCase())) &&
+      caterer.serviceArea.toLowerCase().includes(location.toLowerCase())
   );
+
+  const handleLocationSearch = () => {
+    if (!navigator.geolocation) {
+      toast({
+        variant: 'destructive',
+        title: 'Geolocation Not Supported',
+        description: 'Your browser does not support geolocation.',
+      });
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async position => {
+        const { latitude, longitude } = position.coords;
+        try {
+          // This is a free, no-API-key-required geocoding service.
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+          );
+          const data = await response.json();
+          const city = data.address.city || data.address.town || data.address.village || '';
+          if (city) {
+            setLocation(city);
+            toast({
+              title: 'Location Found!',
+              description: `Now showing caterers near ${city}.`,
+            });
+          } else {
+             toast({
+              variant: 'destructive',
+              title: 'Could Not Determine City',
+              description: 'We found your location but could not determine the city.',
+            });
+          }
+        } catch (error) {
+          toast({
+            variant: 'destructive',
+            title: 'Geolocation Error',
+            description: 'Could not fetch city from your coordinates.',
+          });
+        }
+      },
+      () => {
+        toast({
+          variant: 'destructive',
+          title: 'Geolocation Permission Denied',
+          description: 'Please enable location services in your browser settings to use this feature.',
+        });
+      }
+    );
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -40,6 +96,10 @@ export default function Home() {
             aria-label="Search caterers"
           />
         </div>
+        <Button variant="outline" onClick={handleLocationSearch}>
+          <MapPin className="mr-2 h-4 w-4" />
+          Find Near Me
+        </Button>
         <AIRecommender />
       </div>
 
@@ -51,7 +111,7 @@ export default function Home() {
         </div>
       ) : (
         <div className="text-center py-16">
-          <p className="text-lg text-muted-foreground">No caterers found matching your search.</p>
+          <p className="text-lg text-muted-foreground">No caterers found matching your criteria.</p>
         </div>
       )}
     </div>
