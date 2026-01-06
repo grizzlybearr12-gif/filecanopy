@@ -1,3 +1,76 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "logo1",
+      "description": "Logo for Gourmet Delights",
+      "imageUrl": "https://images.unsplash.com/photo-1620288627223-53302f4e8c74?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxjb21wYW55JTIwbG9nb3xlbnwwfHx8fDE3Njc2NDQ4Mzh8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "company logo"
+    },
+    {
+      "id": "logo2",
+      "description": "Logo for Feast Creators",
+      "imageUrl": "https://images.unsplash.com/photo-1562705121-e624542c7b9b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8Y29tcGFueSUyMGxvZ298ZW58MHx8fHwxNzY3NjQ0ODM4fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "company logo"
+    },
+    {
+      "id": "logo3",
+      "description": "Logo for Simply Served",
+      "imageUrl": "https://images.unsplash.com/photo-1687523327554-fa9f50423489?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxjb21wYW55JTIwbG9nb3xlbnwwfHx8fDE3Njc2NDQ4Mzh8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "company logo"
+    },
+    {
+      "id": "gallery1-1",
+      "description": "Gourmet dish presentation",
+      "imageUrl": "https://images.unsplash.com/photo-1516100882582-96c3a05fe590?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxmb29kJTIwcHJlc2VudGF0aW9ufGVufDB8fHx8MTc2NzY5Mzg3Nnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "food presentation"
+    },
+    {
+      "id": "gallery1-2",
+      "description": "Elegant table setting",
+      "imageUrl": "https://images.unsplash.com/photo-1562713682-cde79058b2b2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHx0YWJsZSUyMHNldHRpbmd8ZW58MHx8fHwxNzY3NjU1MjM2fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "table setting"
+    },
+    {
+      "id": "gallery1-3",
+      "description": "Buffet spread",
+      "imageUrl": "https://images.unsplash.com/photo-1563245372-58fbd29afa7f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxidWZmZXQlMjBmb29kfGVufDB8fHx8MTc2NzY5Mzg3Nnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "buffet food"
+    },
+    {
+      "id": "gallery2-1",
+      "description": "Colorful platter of appetizers",
+      "imageUrl": "https://images.unsplash.com/photo-1764315975176-a0281c4b4f08?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxhcHBldGl6ZXJzJTIwcGxhdHRlcnxlbnwwfHx8fDE3Njc2OTM4NzZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "appetizers platter"
+    },
+    {
+      "id": "gallery2-2",
+      "description": "Chef preparing a meal",
+      "imageUrl": "https://images.unsplash.com/photo-1681270496598-13c5365730c8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxjaGVmJTIwY29va2luZ3xlbnwwfHx8fDE3Njc2MDY0Mjl8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "chef cooking"
+    },
+    {
+      "id": "gallery2-3",
+      "description": "Outdoor event catering",
+      "imageUrl": "https://images.unsplash.com/photo-1571129618841-7884a7a26c93?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxvdXRkb29yJTIwZXZlbnR8ZW58MHx8fHwxNzY3NjkzODc2fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "outdoor event"
+    },
+    {
+      "id": "gallery3-1",
+      "description": "Minimalist food plating",
+      "imageUrl": "https://images.unsplash.com/photo-1612239050209-100ee4a306a4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxtaW5pbWFsaXN0JTIwZm9vZHxlbnwwfHx8fDE3Njc2OTM4NzZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "minimalist food"
+    },
+    {
+      "id": "gallery3-2",
+      "description": "Dessert table",
+      "imageUrl": "https://images.unsplash.com/photo-1568722499526-3ae705b3a11f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxkZXNzZXJ0JTIwdGFibGV8ZW58MHx8fHwxNzY3NjQ2NTM3fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "dessert table"
+    },
+    {
+      "id": "gallery3-3",
+      "description": "Corporate catering setup",
+      "imageUrl": "https://images.unsplash.com/photo-1540575467063-178a50c2df87?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxjb3Jwb3JhdGUlMjBldmVudHxlbnwwfHx8fDE3Njc2NTUyMzZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "corporate event"
+    }
+  ]
 }
