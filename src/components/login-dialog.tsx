@@ -35,10 +35,16 @@ export function LoginDialog() {
 
   // This effect ensures the RecaptchaVerifier is only created once on the client
   useEffect(() => {
-    if (!auth || window.recaptchaVerifier) return;
+    if (!open || !auth || window.recaptchaVerifier) return;
+
     try {
+      // The verifier is initialized only when the dialog is open, ensuring
+      // the 'recaptcha-container' div is in the DOM.
       window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
         size: 'invisible',
+        callback: () => {
+          // reCAPTCHA solved, allow signInWithPhoneNumber.
+        },
       });
     } catch (error) {
       console.error('Error creating RecaptchaVerifier:', error);
@@ -48,7 +54,7 @@ export function LoginDialog() {
         description: 'Could not initialize Recaptcha. Please refresh the page.',
       });
     }
-  }, [auth, toast]);
+  }, [open, auth, toast]);
 
   const handleSendOtp = async () => {
     if (!phoneNumber) {
